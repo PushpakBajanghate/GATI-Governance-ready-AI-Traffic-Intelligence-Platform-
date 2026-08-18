@@ -1,0 +1,51 @@
+# Junction Configuration: Shankar Nagar Square (Nagpur)
+junction_id: "NGP_J09_SHANKAR_NAGAR"
+name: "Shankar Nagar Square (Dharampeth Arterial)"
+corridor_id: "CORR_VNIT_TECH"
+coordinates:
+  latitude: 21.1390
+  longitude: 79.0610
+
+approaches:
+  - id: "APP_NORTH"
+    name: "West High Court Road (from Law College Square)"
+    direction: "Northbound"
+    camera_source: "rtsp://192.168.1.133:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1800
+    downstream_junction_id: null
+  - id: "APP_SOUTH"
+    name: "North Ambazari Road (towards Mate Square & VNIT)"
+    direction: "Southbound"
+    camera_source: "rtsp://192.168.1.134:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1800
+    downstream_junction_id: "NGP_J07_MATE_SQUARE"
+  - id: "APP_EAST"
+    name: "Dharampeth Commercial Link (towards Sitabuldi)"
+    direction: "Eastbound"
+    camera_source: "rtsp://192.168.1.135:554/stream1"
+    lanes: 2
+    saturation_flow_pcu_hr: 1400
+    downstream_junction_id: "NGP_J01_SITABULDI"
+  - id: "APP_WEST"
+    name: "Ladavikar Road (towards Gokulpeth Market)"
+    direction: "Westbound"
+    camera_source: "rtsp://192.168.1.136:554/stream1"
+    lanes: 2
+    saturation_flow_pcu_hr: 1350
+    downstream_junction_id: null
+
+phases:
+  - phase_id: 1
+    name: "WHC Road - Ambazari North-South Corridor"
+    active_approaches: ["APP_NORTH", "APP_SOUTH"]
+    conflicting_phases: [2, 3]
+  - phase_id: 2
+    name: "Dharampeth - Gokulpeth East-West Market Flow"
+    active_approaches: ["APP_EAST", "APP_WEST"]
+    conflicting_phases: [1, 3]
+  - phase_id: 3
+    name: "Dharampeth Commercial Protected Turn"
+    active_approaches: ["APP_NORTH", "APP_EAST"]
+    conflicting_phases: [1, 2]

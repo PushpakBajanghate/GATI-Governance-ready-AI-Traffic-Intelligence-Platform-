@@ -89,6 +89,29 @@ class EmergencyCorridorManager:
             },
             "speed_kmh": 50.0,
         },
+        "VNIT_OCHRI_TRAUMA_CORRIDOR": {
+            "name": "VNIT IT Park & Gayatri Nagar to Orange City Hospital Trauma Hub",
+            "vehicle_type": "AMBULANCE",
+            "destination": "Orange City Hospital & Research Institute (OCHRI)",
+            "sequence": [
+                "NGP_J09_SHANKAR_NAGAR",
+                "NGP_J07_MATE_SQUARE",
+                "NGP_J06_VNIT_IT_PARK",
+                "NGP_J08_LAXMI_NAGAR",
+            ],
+            "distances_m": {
+                "NGP_J09_SHANKAR_NAGAR->NGP_J07_MATE_SQUARE": 550.0,
+                "NGP_J07_MATE_SQUARE->NGP_J06_VNIT_IT_PARK": 400.0,
+                "NGP_J06_VNIT_IT_PARK->NGP_J08_LAXMI_NAGAR": 650.0,
+            },
+            "arterial_phases": {
+                "NGP_J09_SHANKAR_NAGAR": 1,
+                "NGP_J07_MATE_SQUARE": 1,
+                "NGP_J06_VNIT_IT_PARK": 1,
+                "NGP_J08_LAXMI_NAGAR": 1,
+            },
+            "speed_kmh": 52.0,
+        },
     }
 
     def __init__(self):

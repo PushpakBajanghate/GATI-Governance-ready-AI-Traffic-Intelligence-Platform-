@@ -108,10 +108,10 @@ class CityTrafficSimulator:
         for jc in self.junction_configs.values():
             self.runners.append(SimulatedJunctionRunner(jc, self.settings, central_url))
 
-    def run_loop(self, interval_sec: float = 3.0):
+    def run_loop(self, interval_sec: float = 1.0):
         """Simulate periodic tick across all junctions."""
         self.is_running = True
-        print(f"[SIMULATOR] Starting GATI traffic simulation across {len(self.runners)} junctions...")
+        print(f"[SIMULATOR] Starting GATI FAST traffic simulation across {len(self.runners)} junctions...")
         while self.is_running:
             for runner in self.runners:
                 runner.step()
@@ -125,4 +125,4 @@ class CityTrafficSimulator:
 
 if __name__ == "__main__":
     sim = CityTrafficSimulator()
-    sim.run_loop()
+    sim.run_loop(interval_sec=1.0)

@@ -174,16 +174,16 @@ export default function EmergencyCorridorConsole({ onEmergencyTriggered }) {
       </div>
 
       {/* 1-Tap Emergency Dispatch Triggers */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
-        {/* Ambulance Dispatch Button */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+        {/* Ambulance Dispatch Button - Wardha Road */}
         <button
           onClick={() => handleDispatch('AMBULANCE_AIIMS_CORRIDOR', 'AMBULANCE', '108_AMBULANCE_MH31_9021')}
           disabled={isDispatching}
           style={{
-            backgroundColor: '#131d2e',
+            backgroundColor: '#111c2e',
             border: '1.5px solid #0284c7',
             borderRadius: '10px',
-            padding: '14px 18px',
+            padding: '12px 14px',
             cursor: 'pointer',
             textAlign: 'left',
             display: 'flex',
@@ -192,29 +192,30 @@ export default function EmergencyCorridorConsole({ onEmergencyTriggered }) {
             transition: 'all 0.2s ease',
           }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#162844')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#131d2e')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#111c2e')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
-                width: '40px',
-                height: '40px',
+                width: '36px',
+                height: '36px',
                 borderRadius: '8px',
                 backgroundColor: 'rgba(2, 132, 199, 0.2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#38bdf8',
+                flexShrink: 0,
               }}
             >
-              <Hospital size={22} />
+              <Hospital size={18} />
             </div>
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#f8fafc' }}>
-                🚑 Dispatch 108 Medical Ambulance
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#f8fafc' }}>
+                🚑 108 Ambulance (Wardha Rd)
               </div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                Sitabuldi ➔ Rahate (GMCH) ➔ AIIMS Nagpur (55 km/h)
+              <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>
+                Sitabuldi ➔ Rahate (GMCH) ➔ AIIMS
               </div>
             </div>
           </div>
@@ -222,9 +223,67 @@ export default function EmergencyCorridorConsole({ onEmergencyTriggered }) {
             style={{
               backgroundColor: '#0284c7',
               color: '#ffffff',
-              padding: '6px 12px',
+              padding: '5px 10px',
               borderRadius: '6px',
-              fontSize: '11px',
+              fontSize: '10.5px',
+              fontWeight: 700,
+            }}
+          >
+            ACTIVATE
+          </span>
+        </button>
+
+        {/* Ambulance Dispatch Button - VNIT IT Park to OCHRI */}
+        <button
+          onClick={() => handleDispatch('VNIT_OCHRI_TRAUMA_CORRIDOR', 'AMBULANCE', '108_AMBULANCE_OCHRI_02')}
+          disabled={isDispatching}
+          style={{
+            backgroundColor: '#111c2e',
+            border: '1.5px solid #10b981',
+            borderRadius: '10px',
+            padding: '12px 14px',
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#102e24')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#111c2e')}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#34d399',
+                flexShrink: 0,
+              }}
+            >
+              <Hospital size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#f8fafc' }}>
+                🏢 108 Ambulance (VNIT IT Park)
+              </div>
+              <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>
+                Gayatri Nagar ➔ Mate Sq ➔ OCHRI Trauma Hub
+              </div>
+            </div>
+          </div>
+          <span
+            style={{
+              backgroundColor: '#10b981',
+              color: '#ffffff',
+              padding: '5px 10px',
+              borderRadius: '6px',
+              fontSize: '10.5px',
               fontWeight: 700,
             }}
           >
@@ -237,10 +296,10 @@ export default function EmergencyCorridorConsole({ onEmergencyTriggered }) {
           onClick={() => handleDispatch('FIRE_SITABULDI_MARKET', 'FIRE_BRIGADE', 'NMC_FIRE_ENGINE_04')}
           disabled={isDispatching}
           style={{
-            backgroundColor: '#131d2e',
+            backgroundColor: '#111c2e',
             border: '1.5px solid #ea580c',
             borderRadius: '10px',
-            padding: '14px 18px',
+            padding: '12px 14px',
             cursor: 'pointer',
             textAlign: 'left',
             display: 'flex',
@@ -249,29 +308,30 @@ export default function EmergencyCorridorConsole({ onEmergencyTriggered }) {
             transition: 'all 0.2s ease',
           }}
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#291b15')}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#131d2e')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#111c2e')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
-                width: '40px',
-                height: '40px',
+                width: '36px',
+                height: '36px',
                 borderRadius: '8px',
                 backgroundColor: 'rgba(234, 88, 12, 0.2)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#fb923c',
+                flexShrink: 0,
               }}
             >
-              <Flame size={22} />
+              <Flame size={18} />
             </div>
             <div>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#f8fafc' }}>
-                🚒 Dispatch Fire & Rescue Brigade
+              <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#f8fafc' }}>
+                🚒 Fire & Rescue Tender
               </div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                Central Station ➔ Sitabuldi Commercial Market (50 km/h)
+              <div style={{ fontSize: '10.5px', color: '#94a3b8' }}>
+                Central Station ➔ Sitabuldi Market
               </div>
             </div>
           </div>
@@ -279,9 +339,9 @@ export default function EmergencyCorridorConsole({ onEmergencyTriggered }) {
             style={{
               backgroundColor: '#ea580c',
               color: '#ffffff',
-              padding: '6px 12px',
+              padding: '5px 10px',
               borderRadius: '6px',
-              fontSize: '11px',
+              fontSize: '10.5px',
               fontWeight: 700,
             }}
           >

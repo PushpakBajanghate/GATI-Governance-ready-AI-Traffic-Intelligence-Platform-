@@ -1,0 +1,51 @@
+# Junction Configuration: Mate Square / Subhash Nagar (Nagpur)
+junction_id: "NGP_J07_MATE_SQUARE"
+name: "Mate Square & Subhash Nagar Junction"
+corridor_id: "CORR_VNIT_TECH"
+coordinates:
+  latitude: 21.1278
+  longitude: 79.0582
+
+approaches:
+  - id: "APP_NORTH"
+    name: "North Ambazari Road (from Shankar Nagar)"
+    direction: "Northbound"
+    camera_source: "rtsp://192.168.1.125:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1700
+    downstream_junction_id: "NGP_J09_SHANKAR_NAGAR"
+  - id: "APP_SOUTH"
+    name: "South Ambazari Road (towards VNIT IT Park)"
+    direction: "Southbound"
+    camera_source: "rtsp://192.168.1.126:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1750
+    downstream_junction_id: "NGP_J06_VNIT_IT_PARK"
+  - id: "APP_EAST"
+    name: "Abhyankar Nagar Main Road (towards Laxmi Nagar)"
+    direction: "Eastbound"
+    camera_source: "rtsp://192.168.1.127:554/stream1"
+    lanes: 2
+    saturation_flow_pcu_hr: 1400
+    downstream_junction_id: "NGP_J08_LAXMI_NAGAR"
+  - id: "APP_WEST"
+    name: "Ambazari Lake Garden Link Road"
+    direction: "Westbound"
+    camera_source: "rtsp://192.168.1.128:554/stream1"
+    lanes: 2
+    saturation_flow_pcu_hr: 1200
+    downstream_junction_id: null
+
+phases:
+  - phase_id: 1
+    name: "Ambazari North-South Arterial Corridor"
+    active_approaches: ["APP_NORTH", "APP_SOUTH"]
+    conflicting_phases: [2, 3]
+  - phase_id: 2
+    name: "Abhyankar Nagar - Ambazari Garden Cross Flow"
+    active_approaches: ["APP_EAST", "APP_WEST"]
+    conflicting_phases: [1, 3]
+  - phase_id: 3
+    name: "VNIT North Ingress Right Turn Filter"
+    active_approaches: ["APP_SOUTH", "APP_EAST"]
+    conflicting_phases: [1, 2]

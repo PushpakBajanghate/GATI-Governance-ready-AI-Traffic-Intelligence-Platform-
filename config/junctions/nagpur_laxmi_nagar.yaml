@@ -1,0 +1,51 @@
+# Junction Configuration: Laxmi Nagar / Bajaj Nagar (Nagpur)
+junction_id: "NGP_J08_LAXMI_NAGAR"
+name: "Laxmi Nagar Square & Bajaj Nagar Junction"
+corridor_id: "CORR_VNIT_TECH"
+coordinates:
+  latitude: 21.1248
+  longitude: 79.0684
+
+approaches:
+  - id: "APP_NORTH"
+    name: "Bajaj Nagar Road (from Shankar Nagar)"
+    direction: "Northbound"
+    camera_source: "rtsp://192.168.1.129:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1750
+    downstream_junction_id: null
+  - id: "APP_SOUTH"
+    name: "RPTS Road (towards Hingna Link)"
+    direction: "Southbound"
+    camera_source: "rtsp://192.168.1.130:554/stream1"
+    lanes: 2
+    saturation_flow_pcu_hr: 1400
+    downstream_junction_id: null
+  - id: "APP_EAST"
+    name: "Neeri Road (towards Rahate Colony / Wardha Rd)"
+    direction: "Eastbound"
+    camera_source: "rtsp://192.168.1.131:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1800
+    downstream_junction_id: "NGP_J03_RAHATE_COLONY"
+  - id: "APP_WEST"
+    name: "Abhyankar Road (from VNIT / Mate Square)"
+    direction: "Westbound"
+    camera_source: "rtsp://192.168.1.132:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1750
+    downstream_junction_id: "NGP_J07_MATE_SQUARE"
+
+phases:
+  - phase_id: 1
+    name: "East-West Arterial (VNIT to Rahate Colony / Wardha Rd)"
+    active_approaches: ["APP_EAST", "APP_WEST"]
+    conflicting_phases: [2, 3]
+  - phase_id: 2
+    name: "Bajaj Nagar - RPTS North-South"
+    active_approaches: ["APP_NORTH", "APP_SOUTH"]
+    conflicting_phases: [1, 3]
+  - phase_id: 3
+    name: "Laxmi Nagar Commercial Protected Turn"
+    active_approaches: ["APP_WEST", "APP_NORTH"]
+    conflicting_phases: [1, 2]

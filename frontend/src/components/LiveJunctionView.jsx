@@ -1,27 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Activity, AlertCircle, ShieldAlert, Cpu, Eye, ArrowUpRight, Gauge } from 'lucide-react';
+import { Camera, Activity, AlertCircle, ShieldAlert, Cpu, Eye, ArrowUpRight, Gauge, MapPin, Layers } from 'lucide-react';
 
 export default function LiveJunctionView({ junction, telemetry, signalTiming }) {
   const [selectedCam, setSelectedCam] = useState('APP_NORTH');
+  const [viewMode, setViewMode] = useState('junction_4way'); // 'junction_4way' or 'single_cam'
   const [playbackTime, setPlaybackTime] = useState(0);
+  const [speedMultiplier, setSpeedMultiplier] = useState(1); // 1x (Slow/Clear), 2x, 4x, 8x
 
-  // Animate video simulation frame elements
+  // Smooth, readable simulation animation loop
   useEffect(() => {
     const timer = setInterval(() => {
-      setPlaybackTime((prev) => (prev + 1) % 1000);
-    }, 100);
+      setPlaybackTime((prev) => (prev + speedMultiplier * 0.9) % 20000);
+    }, 35);
     return () => clearInterval(timer);
-  }, []);
+  }, [speedMultiplier]);
 
   const approaches = junction?.approaches || [];
   const approachesData = telemetry?.approaches || {};
   const signal = signalTiming?.recommended || telemetry?.signal || {};
-  const currentPhaseId = signalTiming?.current?.phase_id || signal?.current_phase_id || 1;
+  
+  // Dynamic alternating signal phases for rapid presentation demonstration
+  const simulatedPhaseTick = Math.floor((playbackTime / 400)) % 2;
+  const currentPhaseId = signalTiming?.current?.phase_id || (simulatedPhaseTick === 0 ? 1 : 2);
   const currentPhase = junction?.phases?.find((p) => p.phase_id === currentPhaseId) || {
-    name: `Phase ${currentPhaseId}`,
+    name: currentPhaseId === 1 ? 'Phase 1: North-South Arterial' : 'Phase 2: East-West Collector',
     phase_id: currentPhaseId,
-    active_approaches: ['APP_NORTH', 'APP_SOUTH'],
+    active_approaches: currentPhaseId === 1 ? ['APP_NORTH', 'APP_SOUTH'] : ['APP_EAST', 'APP_WEST'],
   };
+
+  const isNorthSouthGreen = currentPhaseId === 1;
+  const isEastWestGreen = currentPhaseId === 2;
 
   const activeCam = approaches.find((a) => a.id === selectedCam) || approaches[0] || {
     id: 'APP_NORTH',
@@ -65,7 +73,7 @@ export default function LiveJunctionView({ junction, telemetry, signalTiming }) 
   const queueVal = Number(currentApproachTelemetry.queue_length_m ?? (pcuVal * 6.0));
   const speedVal = Number(currentApproachTelemetry.avg_speed_kmh ?? 20.0);
 
-  // Simulated bounding box tracks with realistic dense Indian traffic across full width (4 lanes: x from 40px to 600px)
+  // Simulated bounding box tracks with realistic dense Indian traffic across full width
   const APPROACH_SPECIFIC_TRACKS = {
     APP_NORTH: [
       { id: 101, class: 'bus', label: '🚌 Volvo City Bus #101', bbox: [45, 20, 100, 120], speed: 28.0, pcu: 3.0 },
@@ -177,102 +185,698 @@ export default function LiveJunctionView({ junction, telemetry, signalTiming }) 
 
       {/* ─── Main 2-Column Grid: Live AI Camera (Left) + Queue Monitor (Right) ─── */}
       <div className="grid-2col">
-        {/* Left Column: Live CCTV Camera View */}
-        <div className="card live-cam-card">
-          <div className="card-header">
-            <div className="card-title-group">
+        {/* Left Column: Live CCTV Camera / 4-Way Junction Intersection View */}
+        <div className="card live-cam-card glass-panel" style={{ border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '14px', backgroundColor: '#090d16' }}>
+          <div className="card-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div className="card-title-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Camera size={18} className="text-blue" />
-              <span className="card-title">Live AI Camera Feed (Edge AI Detection)</span>
-            </div>
-            <div style={{ display: 'flex', gap: '6px' }}>
-              <span className="badge-pill pulse-badge">
-                <span className="pulse-dot" /> LIVE 30 FPS
-              </span>
-              <span className="badge-pill tech-pill">
-                📏 Smart Distance Meter
+              <span className="card-title" style={{ fontSize: '14px', fontWeight: 700, color: '#f8fafc' }}>
+                Live AI Perception & Signals ({junction?.name || 'Nagpur Junction'})
               </span>
             </div>
-          </div>
 
-          {/* Camera Channel Tabs */}
-          <div className="camera-tabs">
-            {approaches.map((app) => (
-              <button
-                key={app.id}
-                className={`cam-tab-btn ${selectedCam === app.id ? 'active' : ''}`}
-                onClick={() => setSelectedCam(app.id)}
-              >
-                {app.direction || 'Approach'}: {(app.name || app.id).split('(')[0]}
-                {approachesData[app.id]?.emergency && (
-                  <ShieldAlert size={13} className="text-red" style={{ marginLeft: 4 }} />
-                )}
-              </button>
-            ))}
-          </div>
-
-          {/* Simulated CCTV Stream Canvas Container (Full Width 100% Coverage) */}
-          <div className="video-viewport">
-            {/* Background Grid & Road Lanes */}
-            <div className="road-carriageway">
-              <div className="lane-divider divider-1" />
-              <div className="lane-divider divider-2" />
-              <div className="lane-divider divider-3" />
-              <div className="stopline-marker">
-                <span className="stopline-text">TRAFFIC STOP LINE</span>
-              </div>
-            </div>
-
-            {/* Live Bounding Box Detections Overlay */}
-            {simulatedTracks.map((trk) => {
-              const yOffset = ((trk.bbox[1] + playbackTime * (trk.speed / 14.0) * 2.0) % 540);
-              return (
-                <div
-                  key={trk.id}
-                  className={`detection-box box-${trk.class}`}
+            {/* View Mode Switcher: 4-Way Junction vs Single Cam */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', background: '#0f172a', padding: '2px', borderRadius: '7px', border: '1px solid #1e293b' }}>
+                <button
+                  onClick={() => setViewMode('junction_4way')}
                   style={{
-                    left: `${trk.bbox[0]}px`,
-                    top: `${yOffset}px`,
-                    width: `${trk.bbox[2]}px`,
-                    height: `${trk.bbox[3]}px`,
-                    transition: 'top 0.1s linear',
+                    background: viewMode === 'junction_4way' ? 'rgba(56, 189, 248, 0.25)' : 'transparent',
+                    color: viewMode === 'junction_4way' ? '#38bdf8' : '#94a3b8',
+                    border: 'none',
+                    padding: '3px 8px',
+                    borderRadius: '5px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
                   }}
                 >
-                  <div className="detection-tag">
-                    {trk.label} | {trk.speed} km/h
+                  🚦 4-Way Junction (All Signals)
+                </button>
+                <button
+                  onClick={() => setViewMode('single_cam')}
+                  style={{
+                    background: viewMode === 'single_cam' ? 'rgba(14, 165, 233, 0.25)' : 'transparent',
+                    color: viewMode === 'single_cam' ? '#38bdf8' : '#94a3b8',
+                    border: 'none',
+                    padding: '3px 8px',
+                    borderRadius: '5px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  📹 Single Approach Zoom
+                </button>
+              </div>
+
+              {/* Speed Multiplier Toolbar */}
+              <div style={{ display: 'flex', background: '#0f172a', padding: '2px', borderRadius: '7px', border: '1px solid #1e293b', gap: '2px' }}>
+                {[1, 2, 4, 8].map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => setSpeedMultiplier(s)}
+                    style={{
+                      background: speedMultiplier === s ? 'rgba(16, 185, 129, 0.3)' : 'transparent',
+                      color: speedMultiplier === s ? '#34d399' : '#64748b',
+                      border: 'none',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontSize: '10px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {s}x{s >= 4 ? ' ⚡' : ''}
+                  </button>
+                ))}
+              </div>
+
+              <span className="badge-pill pulse-badge" style={{ fontSize: '10.5px', padding: '3px 8px' }}>
+                <span className="pulse-dot" /> LIVE 60 FPS
+              </span>
+            </div>
+          </div>
+
+          {/* If Single Cam mode: Show Camera Channel Tabs */}
+          {viewMode === 'single_cam' && (
+            <div className="camera-tabs" style={{ marginBottom: '10px' }}>
+              {approaches.map((app) => (
+                <button
+                  key={app.id}
+                  className={`cam-tab-btn ${selectedCam === app.id ? 'active' : ''}`}
+                  onClick={() => setSelectedCam(app.id)}
+                >
+                  {app.direction || 'Approach'}: {(app.name || app.id).split('(')[0]}
+                  {approachesData[app.id]?.emergency && (
+                    <ShieldAlert size={13} className="text-red" style={{ marginLeft: 4 }} />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ─── VIEW 1: FULL 4-WAY JUNCTION OVERVIEW (ALL SIGNALS & APPROACHES) ─── */}
+          {viewMode === 'junction_4way' ? (
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                height: '560px',
+                minHeight: '540px',
+                backgroundColor: '#070b14',
+                borderRadius: '10px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flex: 1,
+              }}
+            >
+              {/* 4-Way Road Carriageway Canvas */}
+              <svg viewBox="0 0 600 540" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+                {/* Background Asphalt */}
+                <rect x="0" y="0" width="600" height="540" fill="#0b1120" />
+
+                {/* Vertical Road (North <-> South) */}
+                <rect x="230" y="0" width="140" height="540" fill="#131b2e" />
+                <line x1="300" y1="0" x2="300" y2="200" stroke="#f8fafc" strokeWidth="2" strokeDasharray="6,6" opacity="0.4" />
+                <line x1="300" y1="340" x2="300" y2="540" stroke="#f8fafc" strokeWidth="2" strokeDasharray="6,6" opacity="0.4" />
+
+                {/* Horizontal Road (West <-> East) */}
+                <rect x="0" y="200" width="600" height="140" fill="#131b2e" />
+                <line x1="0" y1="270" x2="230" y2="270" stroke="#f8fafc" strokeWidth="2" strokeDasharray="6,6" opacity="0.4" />
+                <line x1="370" y1="270" x2="600" y2="270" stroke="#f8fafc" strokeWidth="2" strokeDasharray="6,6" opacity="0.4" />
+
+                {/* Center Yellow Hatched Box Junction (Do Not Block) */}
+                <rect x="230" y="200" width="140" height="140" fill="#17223b" stroke="#eab308" strokeWidth="2" />
+                <line x1="230" y1="200" x2="370" y2="340" stroke="#eab308" strokeWidth="1.5" strokeDasharray="4,4" opacity="0.6" />
+                <line x1="370" y1="200" x2="230" y2="340" stroke="#eab308" strokeWidth="1.5" strokeDasharray="4,4" opacity="0.6" />
+                <text x="300" y="274" fill="#fbbf24" fontSize="10.5" fontWeight="bold" textAnchor="middle" opacity="0.9">
+                  MAX-PRESSURE BOX
+                </text>
+
+                {/* Stop Lines (White Solid) */}
+                {/* North Stopline */}
+                <line x1="230" y1="200" x2="300" y2="200" stroke="#ffffff" strokeWidth="4" />
+                {/* South Stopline */}
+                <line x1="300" y1="340" x2="370" y2="340" stroke="#ffffff" strokeWidth="4" />
+                {/* West Stopline */}
+                <line x1="230" y1="270" x2="230" y2="340" stroke="#ffffff" strokeWidth="4" />
+                {/* East Stopline */}
+                <line x1="370" y1="200" x2="370" y2="270" stroke="#ffffff" strokeWidth="4" />
+
+                {/* Direction Arrows */}
+                <path d="M 265,150 L 265,170 M 260,165 L 265,170 L 270,165" stroke="#94a3b8" strokeWidth="2" fill="none" opacity="0.7" />
+                <path d="M 335,390 L 335,370 M 330,375 L 335,370 L 340,375" stroke="#94a3b8" strokeWidth="2" fill="none" opacity="0.7" />
+                <path d="M 160,305 L 180,305 M 175,300 L 180,305 L 175,310" stroke="#94a3b8" strokeWidth="2" fill="none" opacity="0.7" />
+                <path d="M 440,235 L 420,235 M 425,230 L 420,235 L 425,240" stroke="#94a3b8" strokeWidth="2" fill="none" opacity="0.7" />
+              </svg>
+
+              {/* ─── 4 CORNER SIGNAL HUD BADGES (NON-OBSTRUCTING) ─── */}
+              {/* NORTH-WEST CORNER: NORTH APPROACH SIGNAL */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '14px',
+                  left: '14px',
+                  backgroundColor: 'rgba(3, 7, 18, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: `1.5px solid ${isNorthSouthGreen ? '#10b981' : '#ef4444'}`,
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: isNorthSouthGreen ? '0 0 16px rgba(16, 185, 129, 0.4)' : '0 0 10px rgba(239, 68, 68, 0.3)',
+                  zIndex: 10,
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: isNorthSouthGreen ? '#1e293b' : '#ef4444' }} />
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: isNorthSouthGreen ? '#10b981' : '#1e293b' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>NORTH (Wardha Rd)</div>
+                  <div style={{ fontSize: '11.5px', fontWeight: 800, color: isNorthSouthGreen ? '#34d399' : '#f87171' }}>
+                    {isNorthSouthGreen ? '🟢 GREEN (Flowing)' : '🔴 RED (Queued)'} • {approachesData.APP_NORTH?.total_pcu || 21} PCU
                   </div>
                 </div>
-              );
-            })}
-
-            {/* Approach Queue Length & PCU Metric Overlay (Positioned aside on Top Right) */}
-            <div className="feed-hud-overlay">
-              <div className="overlay-metric">
-                <span className="metric-label">Viewing Direction:</span>
-                <span className="metric-val" style={{ color: '#38bdf8' }}>{activeCam.name || activeCam.id}</span>
               </div>
-              <div className="overlay-metric">
-                <span className="metric-label">Traffic Line:</span>
-                <span className="metric-val highlight">
-                  {displayQueue} meters long
+
+              {/* NORTH-EAST CORNER: EAST APPROACH SIGNAL */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '14px',
+                  right: '14px',
+                  backgroundColor: 'rgba(3, 7, 18, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: `1.5px solid ${isEastWestGreen ? '#10b981' : '#ef4444'}`,
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: isEastWestGreen ? '0 0 16px rgba(16, 185, 129, 0.4)' : '0 0 10px rgba(239, 68, 68, 0.3)',
+                  zIndex: 10,
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: isEastWestGreen ? '#1e293b' : '#ef4444' }} />
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: isEastWestGreen ? '#10b981' : '#1e293b' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>EAST (Station/Central Ave)</div>
+                  <div style={{ fontSize: '11.5px', fontWeight: 800, color: isEastWestGreen ? '#34d399' : '#f87171' }}>
+                    {isEastWestGreen ? '🟢 GREEN (Flowing)' : '🔴 RED (Queued)'} • {approachesData.APP_EAST?.total_pcu || 26} PCU
+                  </div>
+                </div>
+              </div>
+
+              {/* SOUTH-WEST CORNER: WEST APPROACH SIGNAL */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '14px',
+                  left: '14px',
+                  backgroundColor: 'rgba(3, 7, 18, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: `1.5px solid ${isEastWestGreen ? '#10b981' : '#ef4444'}`,
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: isEastWestGreen ? '0 0 16px rgba(16, 185, 129, 0.4)' : '0 0 10px rgba(239, 68, 68, 0.3)',
+                  zIndex: 10,
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: isEastWestGreen ? '#1e293b' : '#ef4444' }} />
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: isEastWestGreen ? '#10b981' : '#1e293b' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>WEST (VNIT/Maharajbagh)</div>
+                  <div style={{ fontSize: '11.5px', fontWeight: 800, color: isEastWestGreen ? '#34d399' : '#f87171' }}>
+                    {isEastWestGreen ? '🟢 GREEN (Flowing)' : '🔴 RED (Queued)'} • {approachesData.APP_WEST?.total_pcu || 8} PCU
+                  </div>
+                </div>
+              </div>
+
+              {/* SOUTH-EAST CORNER: SOUTH APPROACH SIGNAL */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '14px',
+                  right: '14px',
+                  backgroundColor: 'rgba(3, 7, 18, 0.9)',
+                  backdropFilter: 'blur(10px)',
+                  border: `1.5px solid ${isNorthSouthGreen ? '#10b981' : '#ef4444'}`,
+                  borderRadius: '8px',
+                  padding: '6px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: isNorthSouthGreen ? '0 0 16px rgba(16, 185, 129, 0.4)' : '0 0 10px rgba(239, 68, 68, 0.25)',
+                  zIndex: 10,
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: isNorthSouthGreen ? '#1e293b' : '#ef4444' }} />
+                  <div style={{ width: '9px', height: '9px', borderRadius: '50%', backgroundColor: isNorthSouthGreen ? '#10b981' : '#1e293b' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>SOUTH (Airport/IT Park)</div>
+                  <div style={{ fontSize: '11.5px', fontWeight: 800, color: isNorthSouthGreen ? '#34d399' : '#f87171' }}>
+                    {isNorthSouthGreen ? '🟢 GREEN (Flowing)' : '🔴 RED (Queued)'} • {approachesData.APP_SOUTH?.total_pcu || 18} PCU
+                  </div>
+                </div>
+              </div>
+
+              {/* ─── DENSE MOVING REAL-TIME VEHICLES (ALL 4 APPROACHES) ─── */}
+              {/* === NORTH APPROACH (Moving Downwards) === */}
+              {/* N1: Swift Car */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '245px',
+                  top: isNorthSouthGreen
+                    ? `${((playbackTime * 2.2) % 600) - 30}px`
+                    : `${Math.min(160, 40 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isNorthSouthGreen ? 'none' : 'top 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🚗</span>
+                <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Swift #102
                 </span>
               </div>
-              <div className="overlay-metric">
-                <span className="metric-label">Traffic Volume:</span>
-                <span className="metric-val">{displayVolume} vehicles</span>
+
+              {/* N2: Auto Rickshaw */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '275px',
+                  top: isNorthSouthGreen
+                    ? `${(((playbackTime * 2.0) + 140) % 600) - 30}px`
+                    : `${Math.min(125, 20 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isNorthSouthGreen ? 'none' : 'top 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🛺</span>
+                <span style={{ fontSize: '8px', color: '#fbbf24', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Auto #106
+                </span>
               </div>
-              <div className="overlay-metric">
-                <span className="metric-label">Average Speed:</span>
-                <span className="metric-val">{displaySpeed} km/h</span>
+
+              {/* N3: Two-Wheeler Activa */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '255px',
+                  top: isNorthSouthGreen
+                    ? `${(((playbackTime * 2.6) + 280) % 600) - 30}px`
+                    : `${Math.min(90, 5 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isNorthSouthGreen ? 'none' : 'top 0.4s ease-out',
+                  fontSize: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🛵</span>
+                <span style={{ fontSize: '8px', color: '#34d399', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Activa #105
+                </span>
+              </div>
+
+              {/* N4: Volvo Bus */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '275px',
+                  top: isNorthSouthGreen
+                    ? `${(((playbackTime * 1.8) + 420) % 600) - 30}px`
+                    : `${Math.min(50, -20 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isNorthSouthGreen ? 'none' : 'top 0.4s ease-out',
+                  fontSize: '18px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🚌</span>
+                <span style={{ fontSize: '8px', color: '#a78bfa', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Volvo #101
+                </span>
+              </div>
+
+              {/* === SOUTH APPROACH (Moving Upwards) === */}
+              {/* S1: Creta SUV */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '310px',
+                  bottom: isNorthSouthGreen
+                    ? `${((playbackTime * 2.2) % 600) - 30}px`
+                    : `${Math.min(160, 40 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isNorthSouthGreen ? 'none' : 'bottom 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🚙</span>
+                <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Creta #203
+                </span>
+              </div>
+
+              {/* S2: Shared Auto */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '340px',
+                  bottom: isNorthSouthGreen
+                    ? `${(((playbackTime * 2.0) + 140) % 600) - 30}px`
+                    : `${Math.min(125, 20 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isNorthSouthGreen ? 'none' : 'bottom 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🛺</span>
+                <span style={{ fontSize: '8px', color: '#fbbf24', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Auto #205
+                </span>
+              </div>
+
+              {/* S3: Pulsar Bike */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '320px',
+                  bottom: isNorthSouthGreen
+                    ? `${(((playbackTime * 2.5) + 280) % 600) - 30}px`
+                    : `${Math.min(90, 5 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isNorthSouthGreen ? 'none' : 'bottom 0.4s ease-out',
+                  fontSize: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🏍️</span>
+                <span style={{ fontSize: '8px', color: '#34d399', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Pulsar #207
+                </span>
+              </div>
+
+              {/* S4: Delivery Mini-Truck */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: '340px',
+                  bottom: isNorthSouthGreen
+                    ? `${(((playbackTime * 1.9) + 420) % 600) - 30}px`
+                    : `${Math.min(50, -20 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isNorthSouthGreen ? 'none' : 'bottom 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🚚</span>
+                <span style={{ fontSize: '8px', color: '#f97316', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Tata Ace #201
+                </span>
+              </div>
+
+              {/* === WEST APPROACH (Moving Left to Right) === */}
+              {/* W1: Royal Enfield Bike */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '280px',
+                  left: isEastWestGreen
+                    ? `${((playbackTime * 2.4) % 650) - 30}px`
+                    : `${Math.min(185, 80 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isEastWestGreen ? 'none' : 'left 0.4s ease-out',
+                  fontSize: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🏍️</span>
+                <span style={{ fontSize: '8px', color: '#34d399', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Enfield #401
+                </span>
+              </div>
+
+              {/* W2: Ola Electric Scooter */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '310px',
+                  left: isEastWestGreen
+                    ? `${(((playbackTime * 2.3) + 140) % 650) - 30}px`
+                    : `${Math.min(150, 45 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isEastWestGreen ? 'none' : 'left 0.4s ease-out',
+                  fontSize: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🛵</span>
+                <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Ola S1 #402
+                </span>
+              </div>
+
+              {/* W3: Nexon EV Car */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '285px',
+                  left: isEastWestGreen
+                    ? `${(((playbackTime * 2.0) + 280) % 650) - 30}px`
+                    : `${Math.min(115, 10 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isEastWestGreen ? 'none' : 'left 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🚗</span>
+                <span style={{ fontSize: '8px', color: '#a855f7', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Nexon #404
+                </span>
+              </div>
+
+              {/* W4: Passenger Auto */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '310px',
+                  left: isEastWestGreen
+                    ? `${(((playbackTime * 2.1) + 420) % 650) - 30}px`
+                    : `${Math.min(80, -25 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isEastWestGreen ? 'none' : 'left 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🛺</span>
+                <span style={{ fontSize: '8px', color: '#fbbf24', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Auto #405
+                </span>
+              </div>
+
+              {/* === EAST APPROACH (Moving Right to Left) === */}
+              {/* E1: Yellow Taxi */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '210px',
+                  right: isEastWestGreen
+                    ? `${((playbackTime * 2.2) % 650) - 30}px`
+                    : `${Math.min(185, 80 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isEastWestGreen ? 'none' : 'right 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🚕</span>
+                <span style={{ fontSize: '8px', color: '#f59e0b', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Taxi #304
+                </span>
+              </div>
+
+              {/* E2: CNG Auto */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '235px',
+                  right: isEastWestGreen
+                    ? `${(((playbackTime * 2.0) + 140) % 650) - 30}px`
+                    : `${Math.min(150, 45 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isEastWestGreen ? 'none' : 'right 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🛺</span>
+                <span style={{ fontSize: '8px', color: '#fbbf24', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Auto #301
+                </span>
+              </div>
+
+              {/* E3: Swiggy 2W Delivery */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '210px',
+                  right: isEastWestGreen
+                    ? `${(((playbackTime * 2.5) + 280) % 650) - 30}px`
+                    : `${Math.min(115, 10 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isEastWestGreen ? 'none' : 'right 0.4s ease-out',
+                  fontSize: '16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🛵</span>
+                <span style={{ fontSize: '8px', color: '#f97316', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  Delivery #305
+                </span>
+              </div>
+
+              {/* E4: White WagonR */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '235px',
+                  right: isEastWestGreen
+                    ? `${(((playbackTime * 2.1) + 420) % 650) - 30}px`
+                    : `${Math.min(80, -25 + ((playbackTime * 0.4) % 15))}px`,
+                  transition: isEastWestGreen ? 'none' : 'right 0.4s ease-out',
+                  fontSize: '17px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 2,
+                }}
+              >
+                <span>🚗</span>
+                <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', padding: '1px 4px', borderRadius: '3px' }}>
+                  WagonR #309
+                </span>
               </div>
             </div>
-
-            {/* Emergency Vehicle Alert Banner on Feed */}
-            {currentApproachTelemetry.emergency && (
-              <div className="feed-emergency-banner">
-                <ShieldAlert size={18} /> 🚨 EMERGENCY AMBULANCE DETECTED — TURNING GREEN
+          ) : (
+            /* ─── VIEW 2: SINGLE CCTV APPROACH ZOOM VIEW ─── */
+            <div className="video-viewport">
+              {/* Background Grid & Road Lanes */}
+              <div className="road-carriageway">
+                <div className="lane-divider divider-1" />
+                <div className="lane-divider divider-2" />
+                <div className="lane-divider divider-3" />
+                <div className="stopline-marker">
+                  <span className="stopline-text">TRAFFIC STOP LINE</span>
+                </div>
               </div>
-            )}
-          </div>
+
+              {/* Live Bounding Box Detections Overlay */}
+              {simulatedTracks.map((trk) => {
+                const yOffset = ((trk.bbox[1] + playbackTime * (trk.speed / 14.0) * 2.0) % 540);
+                return (
+                  <div
+                    key={trk.id}
+                    className={`detection-box box-${trk.class}`}
+                    style={{
+                      left: `${trk.bbox[0]}px`,
+                      top: `${yOffset}px`,
+                      width: `${trk.bbox[2]}px`,
+                      height: `${trk.bbox[3]}px`,
+                      transition: 'top 0.1s linear',
+                    }}
+                  >
+                    <div className="detection-tag">
+                      {trk.label} | {trk.speed} km/h
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Approach Queue Length & PCU Metric Overlay */}
+              <div className="feed-hud-overlay">
+                <div className="overlay-metric">
+                  <span className="metric-label">Viewing Direction:</span>
+                  <span className="metric-val" style={{ color: '#38bdf8' }}>{activeCam.name || activeCam.id}</span>
+                </div>
+                <div className="overlay-metric">
+                  <span className="metric-label">Traffic Line:</span>
+                  <span className="metric-val highlight">
+                    {displayQueue} meters long
+                  </span>
+                </div>
+                <div className="overlay-metric">
+                  <span className="metric-label">Traffic Volume:</span>
+                  <span className="metric-val">{displayVolume} vehicles</span>
+                </div>
+                <div className="overlay-metric">
+                  <span className="metric-label">Average Speed:</span>
+                  <span className="metric-val">{displaySpeed} km/h</span>
+                </div>
+              </div>
+
+              {/* Emergency Vehicle Alert Banner on Feed */}
+              {currentApproachTelemetry.emergency && (
+                <div className="feed-emergency-banner">
+                  <ShieldAlert size={18} /> 🚨 EMERGENCY AMBULANCE DETECTED — TURNING GREEN
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right Column: Per-Approach PCU & Queue Length Breakdown */}

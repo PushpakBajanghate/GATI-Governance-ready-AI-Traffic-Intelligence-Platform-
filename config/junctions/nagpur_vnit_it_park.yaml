@@ -1,0 +1,51 @@
+# Junction Configuration: VNIT Main Gate & Gayatri Nagar IT Park (Nagpur)
+junction_id: "NGP_J06_VNIT_IT_PARK"
+name: "VNIT Main Gate & IT Park Gayatri Nagar T-Point"
+corridor_id: "CORR_VNIT_TECH"
+coordinates:
+  latitude: 21.1235
+  longitude: 79.0515
+
+approaches:
+  - id: "APP_NORTH"
+    name: "South Ambazari Road (from Mate Square / VNIT North)"
+    direction: "Northbound"
+    camera_source: "rtsp://192.168.1.121:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1800
+    downstream_junction_id: "NGP_J07_MATE_SQUARE"
+  - id: "APP_SOUTH"
+    name: "IT Park Ring Road (towards Parsodi & MIHAN Link)"
+    direction: "Southbound"
+    camera_source: "rtsp://192.168.1.122:554/stream1"
+    lanes: 3
+    saturation_flow_pcu_hr: 1750
+    downstream_junction_id: null
+  - id: "APP_EAST"
+    name: "VNIT Campus Ingress & Abhyankar Nagar link"
+    direction: "Eastbound"
+    camera_source: "rtsp://192.168.1.123:554/stream1"
+    lanes: 2
+    saturation_flow_pcu_hr: 1300
+    downstream_junction_id: "NGP_J08_LAXMI_NAGAR"
+  - id: "APP_WEST"
+    name: "Gayatri Nagar IT Park Tech Hub Egress"
+    direction: "Westbound"
+    camera_source: "rtsp://192.168.1.124:554/stream1"
+    lanes: 2
+    saturation_flow_pcu_hr: 1350
+    downstream_junction_id: null
+
+phases:
+  - phase_id: 1
+    name: "South Ambazari Rd - IT Park Ring Rd North-South Arterial"
+    active_approaches: ["APP_NORTH", "APP_SOUTH"]
+    conflicting_phases: [2, 3]
+  - phase_id: 2
+    name: "IT Park Tech Hub & VNIT Campus Cross Traffic"
+    active_approaches: ["APP_EAST", "APP_WEST"]
+    conflicting_phases: [1, 3]
+  - phase_id: 3
+    name: "IT Park Right Turn & Tech Corridor Protected Phase"
+    active_approaches: ["APP_NORTH", "APP_WEST"]
+    conflicting_phases: [1, 2]

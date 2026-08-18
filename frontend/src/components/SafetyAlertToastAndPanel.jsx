@@ -147,39 +147,34 @@ export default function SafetyAlertToastAndPanel({ junctionId = 'NGP_J01_SITABUL
 
   return (
     <div
-      className="card"
+      className="card glass-panel"
       style={{
-        padding: '14px 16px',
+        padding: '14px 18px',
         marginBottom: 0,
-        backgroundColor: '#0a101d',
-        border: activeAlert ? '1.5px solid #ef4444' : '1px solid #1e293b',
-        borderRadius: '12px',
+        backgroundColor: '#090d16',
+        border: activeAlert ? '1.5px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.08)',
+        borderRadius: '14px',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        boxShadow: activeAlert ? '0 0 20px rgba(239, 68, 68, 0.25)' : 'none',
+        boxShadow: activeAlert ? '0 0 24px rgba(239, 68, 68, 0.3)' : '0 8px 32px rgba(0, 0, 0, 0.35)',
         transition: 'all 0.3s ease',
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <ShieldAlert size={16} style={{ color: activeAlert ? '#ef4444' : '#38bdf8' }} />
-          <span style={{ fontSize: '13px', fontWeight: 700, color: '#f8fafc' }}>
-            Incident & Nearest Authority Dispatch
-          </span>
-          <span
-            style={{
-              backgroundColor: 'rgba(56, 189, 248, 0.15)',
-              color: '#38bdf8',
-              fontSize: '10px',
-              fontWeight: 700,
-              padding: '1px 6px',
-              borderRadius: '4px',
-            }}
-          >
-            AUTO-DISPATCH
-          </span>
+          <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: activeAlert ? 'rgba(239, 68, 68, 0.2)' : 'rgba(14, 165, 233, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <ShieldAlert size={16} style={{ color: activeAlert ? '#ef4444' : '#38bdf8' }} />
+          </div>
+          <div>
+            <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#f8fafc' }}>
+              Incident & Nearest Authority Dispatch
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748b' }}>
+              Real-Time Edge SOS Alert & Police/108 Ambulance Dispatch
+            </div>
+          </div>
         </div>
 
         {/* Quick Simulation Triggers for Presentation Demo */}
@@ -188,17 +183,17 @@ export default function SafetyAlertToastAndPanel({ junctionId = 'NGP_J01_SITABUL
             onClick={handleSimulateEdgeAccident}
             disabled={isSimulating}
             style={{
-              backgroundColor: 'rgba(239, 68, 68, 0.18)',
-              border: '1px solid rgba(239, 68, 68, 0.4)',
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+              border: '1px solid #ef4444',
               color: '#fca5a5',
-              padding: '3px 8px',
-              borderRadius: '5px',
-              fontSize: '10px',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
               fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '3px',
+              gap: '4px',
             }}
           >
             <Zap size={11} /> ⚡ Accident
@@ -207,17 +202,17 @@ export default function SafetyAlertToastAndPanel({ junctionId = 'NGP_J01_SITABUL
             onClick={handleSimulateEdgeAmbulance}
             disabled={isSimulating}
             style={{
-              backgroundColor: 'rgba(56, 189, 248, 0.18)',
-              border: '1px solid rgba(56, 189, 248, 0.4)',
+              backgroundColor: 'rgba(14, 165, 233, 0.2)',
+              border: '1px solid #38bdf8',
               color: '#38bdf8',
-              padding: '3px 8px',
-              borderRadius: '5px',
-              fontSize: '10px',
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontSize: '11px',
               fontWeight: 700,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '3px',
+              gap: '4px',
             }}
           >
             <Ambulance size={11} /> 🚑 Ambulance

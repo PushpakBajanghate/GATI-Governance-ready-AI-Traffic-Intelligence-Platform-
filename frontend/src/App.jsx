@@ -21,6 +21,11 @@ const DEFAULT_JUNCTIONS = [
   { junction_id: 'NGP_J03_RAHATE_COLONY', name: 'Rahate Colony Square' },
   { junction_id: 'NGP_J04_AJNI_SQ', name: 'Ajni Square' },
   { junction_id: 'NGP_J05_CHHATRAPATI_SQ', name: 'Chhatrapati Square' },
+  { junction_id: 'NGP_J06_VNIT_IT_PARK', name: 'VNIT Gate & Gayatri Nagar IT Park' },
+  { junction_id: 'NGP_J07_MATE_SQUARE', name: 'Mate Square & Subhash Nagar' },
+  { junction_id: 'NGP_J08_LAXMI_NAGAR', name: 'Laxmi Nagar & Bajaj Nagar' },
+  { junction_id: 'NGP_J09_SHANKAR_NAGAR', name: 'Shankar Nagar Square (Dharampeth)' },
+  { junction_id: 'NGP_J10_AIRPORT_T_POINT', name: 'Nagpur Airport T-Point / MIHAN Gateway' },
 ];
 
 const DEFAULT_DETAIL = {
